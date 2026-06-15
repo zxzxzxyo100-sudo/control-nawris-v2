@@ -10,6 +10,7 @@ import Master from './pages/Master';
 import Returns from './pages/Returns';
 import Transfers from './pages/Transfers';
 import Users from './pages/Users';
+import Whatsapp from './pages/Whatsapp';
 import Placeholder from './pages/Placeholder';
 
 export default function App() {
@@ -33,7 +34,7 @@ export default function App() {
         <Route path="drivers" element={<Drivers />} />
         <Route path="returns" element={<Returns />} />
         <Route path="transfers" element={<Transfers />} />
-        <Route path="whatsapp" element={<Placeholder title="واتساب" />} />
+        <Route path="whatsapp" element={<Whatsapp />} />
         <Route path="reports" element={<Placeholder title="التقارير" />} />
         <Route path="staff" element={<Placeholder title="متابعة الموظفين" />} />
         <Route path="master" element={<Master />} />

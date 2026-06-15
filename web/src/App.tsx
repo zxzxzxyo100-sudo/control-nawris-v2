@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Shipments from './pages/Shipments';
+import Upload from './pages/Upload';
 import Placeholder from './pages/Placeholder';
 
 export default function App() {
@@ -31,7 +32,7 @@ export default function App() {
         <Route path="reports" element={<Placeholder title="التقارير" />} />
         <Route path="staff" element={<Placeholder title="متابعة الموظفين" />} />
         <Route path="master" element={<Placeholder title="البيانات الثابتة" />} />
-        <Route path="upload" element={<Placeholder title="رفع البيانات" />} />
+        <Route path="upload" element={<Upload />} />
         <Route path="users" element={<Placeholder title="المستخدمون" />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

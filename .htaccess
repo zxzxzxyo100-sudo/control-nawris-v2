@@ -1,0 +1,13 @@
+# توجيه SPA — كل المسارات تذهب لـ index.html ما عدا الملفات الحقيقية و /api
+RewriteEngine On
+
+# اترك طلبات /api لمعالجها الخاص
+RewriteRule ^api/ - [L]
+
+# الملفات والمجلدات الموجودة فعلاً تُخدَّم كما هي
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# أي مسار آخر → index.html (توجيه React Router)
+RewriteRule ^ index.html [L]

@@ -1,0 +1,10 @@
+# توجيه كل طلبات /api/* إلى index.php
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# منع الوصول المباشر للملفات الحسّاسة
+<FilesMatch "\.(env|sql)$">
+    Require all denied
+</FilesMatch>

@@ -7,6 +7,8 @@ import Shipments from './pages/Shipments';
 import Upload from './pages/Upload';
 import Drivers from './pages/Drivers';
 import Master from './pages/Master';
+import Returns from './pages/Returns';
+import Transfers from './pages/Transfers';
 import Placeholder from './pages/Placeholder';
 
 export default function App() {
@@ -28,8 +30,8 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="shipments" element={<Shipments />} />
         <Route path="drivers" element={<Drivers />} />
-        <Route path="returns" element={<Placeholder title="المرتجعات" />} />
-        <Route path="transfers" element={<Placeholder title="التحويلات" />} />
+        <Route path="returns" element={<Returns />} />
+        <Route path="transfers" element={<Transfers />} />
         <Route path="whatsapp" element={<Placeholder title="واتساب" />} />
         <Route path="reports" element={<Placeholder title="التقارير" />} />
         <Route path="staff" element={<Placeholder title="متابعة الموظفين" />} />

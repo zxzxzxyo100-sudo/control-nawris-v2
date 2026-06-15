@@ -11,7 +11,8 @@ import Returns from './pages/Returns';
 import Transfers from './pages/Transfers';
 import Users from './pages/Users';
 import Whatsapp from './pages/Whatsapp';
-import Placeholder from './pages/Placeholder';
+import Reports from './pages/Reports';
+import Staff from './pages/Staff';
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -35,8 +36,8 @@ export default function App() {
         <Route path="returns" element={<Returns />} />
         <Route path="transfers" element={<Transfers />} />
         <Route path="whatsapp" element={<Whatsapp />} />
-        <Route path="reports" element={<Placeholder title="التقارير" />} />
-        <Route path="staff" element={<Placeholder title="متابعة الموظفين" />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="staff" element={<Staff />} />
         <Route path="master" element={<Master />} />
         <Route path="upload" element={<Upload />} />
         <Route path="users" element={<Users />} />

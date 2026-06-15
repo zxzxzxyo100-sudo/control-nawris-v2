@@ -9,6 +9,7 @@ import Drivers from './pages/Drivers';
 import Master from './pages/Master';
 import Returns from './pages/Returns';
 import Transfers from './pages/Transfers';
+import Users from './pages/Users';
 import Placeholder from './pages/Placeholder';
 
 export default function App() {
@@ -37,7 +38,7 @@ export default function App() {
         <Route path="staff" element={<Placeholder title="متابعة الموظفين" />} />
         <Route path="master" element={<Master />} />
         <Route path="upload" element={<Upload />} />
-        <Route path="users" element={<Placeholder title="المستخدمون" />} />
+        <Route path="users" element={<Users />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

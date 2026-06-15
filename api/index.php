@@ -51,6 +51,15 @@ try {
         ]]);
     }
 
+    // ── إدارة المستخدمين (للمدير فقط) ────────────────────────────────────────
+    if ($segments[0] === 'users') {
+        $claims = require_auth();
+        if (($claims['role'] ?? '') !== 'admin') {
+            json_out(['error' => 'هذه العملية للمدير فقط'], 403);
+        }
+        handle_users($method);
+    }
+
     // ── واجهة البيانات العامة ────────────────────────────────────────────────
     if ($segments[0] === 'data' && isset($segments[1])) {
         require_auth();
@@ -254,4 +263,62 @@ function data_delete(string $table): void
     $st = db()->prepare($sql);
     $st->execute($binds);
     json_out(['success' => true]);
+}
+
+// ── إدارة المستخدمين ─────────────────────────────────────────────────────────
+function handle_users(string $method): void
+{
+    switch ($method) {
+        case 'GET': {
+            // لا تُرجع تجزئة كلمة المرور أبداً
+            $st = db()->query('SELECT username, name, role, status, created_at FROM users ORDER BY created_at DESC');
+            json_out($st->fetchAll());
+        }
+        case 'POST': {
+            // إنشاء أو تحديث مستخدم. كلمة المرور تُجزّأ بـ bcrypt.
+            $b = read_json_body();
+            $username = strtolower(trim((string)($b['username'] ?? '')));
+            $name     = trim((string)($b['name'] ?? ''));
+            $role     = trim((string)($b['role'] ?? 'employee'));
+            $status   = trim((string)($b['status'] ?? 'active'));
+            $password = (string)($b['password'] ?? '');
+            if ($username === '' || $name === '') {
+                json_out(['error' => 'اسم المستخدم والاسم مطلوبان'], 400);
+            }
+
+            // هل المستخدم موجود؟
+            $exists = db()->prepare('SELECT username FROM users WHERE username = ?');
+            $exists->execute([$username]);
+            $isNew = !$exists->fetch();
+
+            if ($isNew) {
+                if ($password === '') json_out(['error' => 'كلمة المرور مطلوبة للمستخدم الجديد'], 400);
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $st = db()->prepare(
+                    'INSERT INTO users (username, name, password_hash, role, status) VALUES (?, ?, ?, ?, ?)'
+                );
+                $st->execute([$username, $name, $hash, $role, $status]);
+            } else {
+                // تحديث — كلمة المرور اختيارية
+                if ($password !== '') {
+                    $st = db()->prepare('UPDATE users SET name=?, role=?, status=?, password_hash=? WHERE username=?');
+                    $st->execute([$name, $role, $status, password_hash($password, PASSWORD_DEFAULT), $username]);
+                } else {
+                    $st = db()->prepare('UPDATE users SET name=?, role=?, status=? WHERE username=?');
+                    $st->execute([$name, $role, $status, $username]);
+                }
+            }
+            json_out(['success' => true]);
+        }
+        case 'DELETE': {
+            $username = strtolower(trim((string)($_GET['username'] ?? '')));
+            if ($username === '') json_out(['error' => 'اسم المستخدم مطلوب'], 400);
+            if ($username === 'admin') json_out(['error' => 'لا يمكن حذف حساب المدير الرئيسي'], 400);
+            $st = db()->prepare('DELETE FROM users WHERE username = ?');
+            $st->execute([$username]);
+            json_out(['success' => true]);
+        }
+        default:
+            json_out(['error' => 'طريقة غير مسموحة'], 405);
+    }
 }

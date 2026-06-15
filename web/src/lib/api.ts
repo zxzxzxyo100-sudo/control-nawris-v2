@@ -51,4 +51,19 @@ export const api = {
 
   remove: (table: string, query: string) =>
     request(`/data/${table}?${query}`, { method: 'DELETE' }),
+
+  // إدارة المستخدمين (للمدير فقط)
+  listUsers: () => request<UserRow[]>('/users'),
+  saveUser: (user: UserRow & { password?: string }) =>
+    request('/users', { method: 'POST', body: JSON.stringify(user) }),
+  deleteUser: (username: string) =>
+    request(`/users?username=${encodeURIComponent(username)}`, { method: 'DELETE' }),
 };
+
+export interface UserRow {
+  username: string;
+  name: string;
+  role: string;
+  status: string;
+  created_at?: string;
+}

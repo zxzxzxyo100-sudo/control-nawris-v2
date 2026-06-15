@@ -156,5 +156,9 @@ CREATE TABLE IF NOT EXISTS `contacted_log` (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ملاحظة: لإنشاء أول مستخدم مدير، شغّل سكربت database/setup_admin.php مرة واحدة
--- على السيرفر (يولّد كلمة مرور مجزّأة بـ bcrypt بشكل صحيح)، ثم احذفه.
+-- ─── حساب المدير الافتراضي ───────────────────────────────────────────────────
+-- المستخدم: admin   |   كلمة المرور: 12345678
+-- التجزئة bcrypt صالحة — يعمل الدخول فور تشغيل هذا الملف. غيّر كلمة المرور بعد الدخول.
+INSERT INTO `users` (`username`, `name`, `password_hash`, `role`, `status`)
+VALUES ('admin', 'المدير', '$2b$10$h06mj3Z582pEXkgn.I6tfe3ztA7b3ra25Ju2hYQ.kWB5bMxnGPoGO', 'admin', 'active')
+ON DUPLICATE KEY UPDATE `password_hash` = VALUES(`password_hash`), `role` = 'admin', `status` = 'active';

@@ -27,17 +27,6 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 
-// فحص توفّر إضافة cURL قبل أي شيء
-if (!function_exists('curl_init')) {
-    http_response_code(500);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode([
-        'error'  => 'إضافة cURL غير مفعّلة على السيرفر',
-        'fix'    => 'فعّل extension=curl من PHP، أو سنحوّل الكود لاستخدام file_get_contents',
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
 // ── حماية التشغيل ────────────────────────────────────────────────────────────
 $isCli = (PHP_SAPI === 'cli');
 if (!$isCli) {
@@ -101,27 +90,54 @@ function resolve_driver_id(PDO $pdo, ?string $name, ?string $branch): ?int
     return (int) $id;
 }
 
-// ── طلب HTTP واحد للـ API ────────────────────────────────────────────────────
+// ── طلب HTTP واحد للـ API (cURL إن توفّر، وإلا file_get_contents) ─────────────
 function fetch_page(string $url, string $apiKey, array $params): array
 {
     $full = $url . '?' . http_build_query(array_filter($params, fn($v) => $v !== '' && $v !== null));
-    $ch = curl_init($full);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 60,
-        CURLOPT_HTTPHEADER     => [
-            'X-API-KEY: ' . $apiKey,
-            'Accept: application/json',
-        ],
-    ]);
-    $body = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err  = curl_error($ch);
-    curl_close($ch);
+    $headers = [
+        'X-API-KEY: ' . $apiKey,
+        'Accept: application/json',
+    ];
 
-    if ($body === false) {
-        throw new RuntimeException("فشل الاتصال بالـ API: $err");
+    $body = null;
+    $code = 0;
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($full);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 60,
+            CURLOPT_HTTPHEADER     => $headers,
+        ]);
+        $body = curl_exec($ch);
+        $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err  = curl_error($ch);
+        curl_close($ch);
+        if ($body === false) {
+            throw new RuntimeException("فشل الاتصال بالـ API (cURL): $err");
+        }
+    } else {
+        // بديل بلا cURL
+        $ctx = stream_context_create([
+            'http' => [
+                'method'        => 'GET',
+                'header'        => implode("\r\n", $headers),
+                'timeout'       => 60,
+                'ignore_errors' => true,
+            ],
+            'ssl' => ['verify_peer' => true, 'verify_peer_name' => true],
+        ]);
+        $body = @file_get_contents($full, false, $ctx);
+        if ($body === false) {
+            throw new RuntimeException('فشل الاتصال بالـ API (file_get_contents) — تحقّق من allow_url_fopen');
+        }
+        // استخراج رمز الحالة من $http_response_header
+        $code = 0;
+        foreach ($http_response_header ?? [] as $h) {
+            if (preg_match('#^HTTP/\S+\s+(\d{3})#', $h, $m)) $code = (int) $m[1];
+        }
     }
+
     if ($code < 200 || $code >= 300) {
         throw new RuntimeException("الـ API أرجع رمز $code: " . substr((string) $body, 0, 300));
     }

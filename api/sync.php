@@ -20,8 +20,23 @@ declare(strict_types=1);
  *   SYNC_SECRET         = <سلسلة عشوائية> (تُطلب فقط عند التشغيل عبر المتصفح)
  */
 
+// إظهار الأخطاء مؤقتاً للتشخيص (يُزال بعد حل المشكلة)
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
+
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
+
+// فحص توفّر إضافة cURL قبل أي شيء
+if (!function_exists('curl_init')) {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'error'  => 'إضافة cURL غير مفعّلة على السيرفر',
+        'fix'    => 'فعّل extension=curl من PHP، أو سنحوّل الكود لاستخدام file_get_contents',
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 // ── حماية التشغيل ────────────────────────────────────────────────────────────
 $isCli = (PHP_SAPI === 'cli');

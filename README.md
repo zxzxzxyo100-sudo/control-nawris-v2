@@ -53,6 +53,27 @@ npm run build    # يولّد index.html + assets/ في جذر المستودع
 
 ثم ارفع (commit + push) — يُنشر تلقائياً عبر Hostinger.
 
+## مزامنة الطرود المتأخرة من backoffice الخارجي
+
+السكريبت `api/sync.php` يسحب الطرود المتأخرة (مع المندوب / مرتجع) من الـ API الخارجي
+ويُحدّث جدول `shipments` تلقائياً (upsert على `tracking_code`)، ويربط المناديب في جدول `drivers`.
+
+**الإعداد:** أضف مفاتيح `NAWRIS_API_*` و`SYNC_SECRET` في `api/.env` (انظر `.env.example`).
+
+**التشغيل اليدوي للاختبار:**
+```bash
+php api/sync.php                          # من سطر الأوامر
+# أو عبر المتصفح:
+# https://<موقعك>/api/sync.php?key=SYNC_SECRET
+```
+
+**الجدولة التلقائية (Cron Job في hPanel):** شغّله كل ساعة مثلاً:
+```
+0 * * * * /usr/bin/php /home/USER/public_html/api/sync.php
+```
+
+يُرجع السكريبت ملخّصاً JSON: عدد الصفحات، الصفوف المقروءة، المُحدّثة، والتوزيع حسب الحالة.
+
 ## الحالة
 
 - [x] المرحلة ٠: هيكل المستودع + إعداد البناء
